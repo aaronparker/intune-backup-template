@@ -1,0 +1,167 @@
+name: Backup Intune
+
+# Controls when the action will run. 
+on:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+    branches:
+        - main
+  push:
+    paths:
+      - '.github/workflows/intune-backup.yml'
+    tags-ignore:
+      - '*'
+  schedule:
+    # Run the Intune configuration backup every day at 1am
+    - cron:  '0 1 * * *'
+
+# Add variables to the repo as secrets
+env:
+  REPO_DIR: "$GITHUB_WORKSPACE/prod-backup"
+  TENANT_NAME: ${{ secrets.TENANT_NAME }}
+  CLIENT_ID: ${{ secrets.CLIENT_ID }}
+  CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Import GPG key so that we can sign the commit
+      - name: Import GPG key
+        id: import_gpg
+        uses: crazy-max/ghaction-import-gpg@v4
+        with:
+          gpg_private_key: ${{ secrets.GPGKEY }}
+          passphrase: ${{ secrets.GPGPASSPHRASE }}
+          git_user_signingkey: true
+          git_commit_gpgsign: true
+          git_config_global: true
+          git_tag_gpgsign: true
+          git_push_gpgsign: false
+          git_committer_name: ${{ secrets.COMMIT_NAME }}
+          git_committer_email: ${{ secrets.COMMIT_EMAIL }}
+
+      # Install IntuneCD
+      # https://github.com/almenscorner/IntuneCD
+      - name: Install IntuneCD
+        shell: bash
+        run: |
+          pip3 install IntuneCD
+
+      # Backup the latest configuration, using the current directory - $GITHUB_WORKSPACE
+      - name: Backup Intune configuration
+        shell: bash
+        run: |
+          IntuneCD-startbackup -m 1 -o yaml -p "$GITHUB_WORKSPACE/prod-backup"
+
+      # Commit changes and push to repo
+      - name: Commit backup changes
+        shell: bash
+        run: |
+          DATEF=`date +%Y.%m.%d`
+          git add --all
+          git commit -m "Intune backup $DATEF"
+          git push origin HEAD:main
+
+  document:
+    needs: backup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pull
+        shell: bash
+        run: |
+          git pull origin
+
+      # Import GPG key so that we can sign the commit
+      - name: Import GPG key
+        id: import_gpg
+        uses: crazy-max/ghaction-import-gpg@v4
+        with:
+          gpg_private_key: ${{ secrets.GPGKEY }}
+          passphrase: ${{ secrets.GPGPASSPHRASE }}
+          git_user_signingkey: true
+          git_commit_gpgsign: true
+          git_config_global: true
+          git_tag_gpgsign: true
+          git_push_gpgsign: false
+          git_committer_name: ${{ secrets.COMMIT_NAME }}
+          git_committer_email: ${{ secrets.COMMIT_EMAIL }}
+
+      # Install IntuneCD
+      # https://github.com/almenscorner/IntuneCD
+      - name: Install IntuneCD
+        shell: bash
+        run: |
+          pip3 install IntuneCD
+
+      # Create markdown documentation
+      - name: Generate markdown document
+        shell: bash
+        run: |
+          IntuneCD-startdocumentation -p "$GITHUB_WORKSPACE/prod-backup" -o "$GITHUB_WORKSPACE/prod-as-built.md" -t $TENANT_NAME -i 'Generated documentation'
+
+      # Install md-to-pdf
+      # https://github.com/simonhaenisch/md-to-pdf
+      - name: Install md-to-pdf
+        shell: bash
+        run: |
+          npm i -g md-to-pdf
+
+      # Convert markdown document to PDF
+      - name: Convert markdown to PDF
+        shell: bash
+        run: |
+          md-to-pdf "$GITHUB_WORKSPACE/prod-as-built.md" --pdf-options '{ "format": "A4", "margin": "10mm", "printBackground": false }'
+
+      # Commit changes and push to repo
+      - name: Commit documentation changes
+        shell: bash
+        run: |
+          DATEF=`date +%Y.%m.%d`
+          git add --all
+          git commit -m "Intune documentation $DATEF"
+          git push origin HEAD:main
+
+  tag:
+    needs: document
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.PAT }}
+
+      - name: Pull
+        shell: bash
+        run: |
+          git pull origin
+
+      # Import GPG key so that we can sign the commit
+      - name: Import GPG key
+        id: import_gpg
+        uses: crazy-max/ghaction-import-gpg@v4
+        with:
+          gpg_private_key: ${{ secrets.GPGKEY }}
+          passphrase: ${{ secrets.GPGPASSPHRASE }}
+          git_user_signingkey: true
+          git_commit_gpgsign: true
+          git_config_global: true
+          git_tag_gpgsign: true
+          git_push_gpgsign: false
+          git_committer_name: ${{ secrets.COMMIT_NAME }}
+          git_committer_email: ${{ secrets.COMMIT_EMAIL }}
+
+      # Push tag
+      - name: Push tag
+        shell: bash
+        run: |
+          DATEF=`date +%Y.%m.%d`
+          git tag -a "v$DATEF" -m "Intune documentation $DATEF"
+          git push origin "v$DATEF"

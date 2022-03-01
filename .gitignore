@@ -1,0 +1,6 @@
+# Ignore files for the workflows
+.DS_Store
+auth.json
+as-built.md
+mdpdf.log
+prod-as-built.md
