@@ -108,19 +108,6 @@ jobs:
         run: |
           IntuneCD-startdocumentation -p "$GITHUB_WORKSPACE/prod-backup" -o "$GITHUB_WORKSPACE/prod-as-built.md" -t $TENANT_NAME -i 'Generated documentation'
 
-      # Install md-to-pdf
-      # https://github.com/simonhaenisch/md-to-pdf
-      - name: Install md-to-pdf
-        shell: bash
-        run: |
-          npm i -g md-to-pdf
-
-      # Convert markdown document to PDF
-      - name: Convert markdown to PDF
-        shell: bash
-        run: |
-          md-to-pdf "$GITHUB_WORKSPACE/prod-as-built.md" --pdf-options '{ "format": "A4", "margin": "10mm", "printBackground": false }'
-
       # Commit changes and push to repo
       - name: Commit documentation changes
         shell: bash

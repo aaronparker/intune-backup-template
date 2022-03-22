@@ -3,14 +3,26 @@ name: Release documentation
 on:
   push:
     tags:
-      # Run when intune-backup.yml adds a tag
       - "v*.*.*"
 
 jobs:
-  release:
+  document-release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+
+      # Install md-to-pdf
+      # https://github.com/simonhaenisch/md-to-pdf
+      - name: Install md-to-pdf
+        shell: bash
+        run: |
+          npm i -g md-to-pdf
+
+      # Convert markdown document to PDF
+      - name: Convert markdown to PDF
+        shell: bash
+        run: |
+          md-to-pdf "$GITHUB_WORKSPACE/prod-as-built.md" --pdf-options '{ "format": "A4", "margin": "10mm", "printBackground": false }'
 
       # Import GPG key so that we can sign the commit
       - name: Import GPG key
