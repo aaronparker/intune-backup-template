@@ -25,6 +25,9 @@ env:
 jobs:
   backup:
     runs-on: ubuntu-latest
+    outputs:
+      output1: ${{ steps.commit.outputs.changes_detected }}
+
     steps:
       - uses: actions/checkout@v2
         with:
@@ -48,28 +51,49 @@ jobs:
       # Install IntuneCD
       # https://github.com/almenscorner/IntuneCD
       - name: Install IntuneCD
+        id: install
         shell: bash
         run: |
           pip3 install IntuneCD
 
       # Backup the latest configuration, using the current directory - $GITHUB_WORKSPACE
       - name: Backup Intune configuration
+        id: backup
         shell: bash
         run: |
           IntuneCD-startbackup -m 1 -o yaml -p "$GITHUB_WORKSPACE/prod-backup"
 
-      # Commit changes and push to repo
-      - name: Commit backup changes
+      - name: Get date
         shell: bash
+        id: get-date
         run: |
           DATEF=`date +%Y.%m.%d`
-          git add --all
-          git commit -m "Intune backup $DATEF"
-          git push origin HEAD:main
+          echo "::set-output name=date::$DATEF"
+
+      - name: Commit changes
+        id: commit
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "Intune backup ${{steps.get-date.outputs.date}}"
+          commit_user_name: ${{ secrets.COMMIT_NAME }}
+          commit_user_email: ${{ secrets.COMMIT_EMAIL }}
+          #tagging_message: 'v1.0.${{ github.run_number }}'
+
+      - name: "Run if changes have been detected"
+        if: steps.commit.outputs.changes_detected == 'true'
+        run: echo "Changes committed."
+
+      - name: "Run if no changes have been detected"
+        if: steps.commit.outputs.changes_detected == 'false'
+        run: echo "No changes detected."
 
   document:
     needs: backup
+    if: needs.backup.outputs.output1 == 'true'
     runs-on: ubuntu-latest
+    outputs:
+      output1: ${{ steps.commit.outputs.changes_detected }}
+
     steps:
       - uses: actions/checkout@v2
         with:
@@ -108,17 +132,33 @@ jobs:
         run: |
           IntuneCD-startdocumentation -p "$GITHUB_WORKSPACE/prod-backup" -o "$GITHUB_WORKSPACE/prod-as-built.md" -t $TENANT_NAME -i 'Generated documentation'
 
-      # Commit changes and push to repo
-      - name: Commit documentation changes
+      - name: Get date
         shell: bash
+        id: get-date
         run: |
           DATEF=`date +%Y.%m.%d`
-          git add --all
-          git commit -m "Intune documentation $DATEF"
-          git push origin HEAD:main
+          echo "::set-output name=date::$DATEF"
+
+      - name: Commit changes
+        id: commit
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "Intune documentation ${{steps.get-date.outputs.date}}"
+          commit_user_name: ${{ secrets.COMMIT_NAME }}
+          commit_user_email: ${{ secrets.COMMIT_EMAIL }}
+          #tagging_message: 'v1.0.${{ github.run_number }}'
+
+      - name: "Run if changes have been detected"
+        if: steps.commit.outputs.changes_detected == 'true'
+        run: echo "Changes committed."
+
+      - name: "Run if no changes have been detected"
+        if: steps.commit.outputs.changes_detected == 'false'
+        run: echo "No changes detected."
 
   tag:
     needs: document
+    if: needs.document.outputs.output1 == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
