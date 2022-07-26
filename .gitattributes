@@ -2,16 +2,10 @@
 * text=auto
 
 # Standard to msysgit
-*.doc diff=astextplain
-*.DOC diff=astextplain
-*.docx diff=astextplain
-*.DOCX diff=astextplain
-*.dot diff=astextplain
-*.DOT diff=astextplain
-*.pdf diff=astextplain
-*.PDF diff=astextplain
-*.rtf diff=astextplain
-*.RTF diff=astextplain
+*.ps1 diff=astextplain
+*.PS1 diff=astextplain
+*.json diff=astextplain
+*.JSON diff=astextplain
 *.yml diff=astextplain
 *.YML diff=astextplain
 *.md diff=astextplain

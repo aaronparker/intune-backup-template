@@ -49,13 +49,24 @@ jobs:
         shell: bash
         run: |
           mkdir -p "$GITHUB_WORKSPACE/prod-backup"
-          IntuneCD-startbackup -m 1 -o yaml -p "$GITHUB_WORKSPACE/prod-backup"
+          IntuneCD-startbackup \
+              --mode=1 \
+              --output=json \
+              --path="$GITHUB_WORKSPACE/prod-backup"
+              #--localauth=./auth.json
+              #--exclude=assignments
 
       # Create markdown documentation
       - name: Generate markdown document
         shell: bash
         run: |
-          IntuneCD-startdocumentation -p "$GITHUB_WORKSPACE/prod-backup" -o "$GITHUB_WORKSPACE/prod-as-built.md" -t $TENANT_NAME -i 'Generated documentation'
+          INTRO="Intune backup and documentation generated at $GITHUB_REPOSITORY <img align=\"right\" width=\"96\" height=\"96\" src=\"./logo.png\">"
+          IntuneCD-startdocumentation \
+              --path="$GITHUB_WORKSPACE/prod-backup" \
+              --outpath="$GITHUB_WORKSPACE/prod-as-built.md" \
+              --tenantname=$TENANT_NAME \
+              --intro=$INTRO \
+              #--split=Y
 
       - name: Get date
         shell: bash
