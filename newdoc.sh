@@ -1,4 +1,4 @@
-# Generates the Intune backup locally
+# Generate the as-built document in markdown
 INTRO="Endpoint Manager backup and documentation generated at locally. <img align=\"right\" width=\"96\" height=\"96\" src=\"./logo.png\">"
 IntuneCD-startdocumentation \
     --path="$PWD/prod-backup" \
@@ -7,5 +7,10 @@ IntuneCD-startdocumentation \
     --intro=$INTRO
     #--split=Y
 
-# Creates the as-built documentation
-md-to-pdf "$PWD/prod-as-built.md" --pdf-options '{ "format": "A4", "margin": "10mm", "printBackground": false }'
+# Generate a PDF document from the as-built markdown
+md-to-pdf "$PWD/prod-as-built.md" \
+    --config-file ./md2pdf/pdfconfig.json
+
+# Generate a HTML document from the as-built markdown
+md-to-pdf "$PWD/prod-as-built.md" \
+    --config-file ./md2pdf/htmlconfig.json --as-html

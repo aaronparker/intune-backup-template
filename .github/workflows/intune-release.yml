@@ -25,7 +25,15 @@ jobs:
       - name: Convert markdown to PDF
         shell: bash
         run: |
-          md-to-pdf "$GITHUB_WORKSPACE/prod-as-built.md" --pdf-options '{ "format": "A4", "margin": "10mm", "printBackground": false }'
+          md-to-pdf "$GITHUB_WORKSPACE/prod-as-built.md" \
+            --config-file ./md2pdf/pdfconfig.json
+
+      # Convert markdown document to PDF
+      - name: Convert markdown to HTML
+        shell: bash
+        run: |
+          md-to-pdf "$GITHUB_WORKSPACE/prod-as-built.md" \
+            --config-file ./md2pdf/htmlconfig.json --as-html
 
       # Import GPG key so that we can sign the commit
       - name: Import GPG key
@@ -48,4 +56,6 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           prerelease: false
-          files: prod-as-built.pdf
+          files: |
+            prod-as-built.pdf
+            prod-as-built.html

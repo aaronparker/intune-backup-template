@@ -1,0 +1,9 @@
+{
+    "stylesheet": [
+        "./md2pdf/htmlstyle.css"
+    ],
+    "marked_options": {
+        "headerIds": false,
+        "smartypants": true
+    }
+}

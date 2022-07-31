@@ -1,0 +1,17 @@
+{
+    "stylesheet": [
+        "./md2pdf/pdfstyle.css"
+    ],
+    "marked_options": {
+        "headerIds": false,
+        "smartypants": true
+    },
+    "pdf_options": {
+        "format": "A4",
+        "margin": "15mm",
+        "printBackground": false,
+        "headerTemplate": "<style> section { margin: 0 auto; font-family: sans-serif !important; font-size: 9px; } </style><section><span>MEM Documentation</span></section>",
+        "footerTemplate": "<style> section { margin: 0 auto; font-family: sans-serif !important; font-size: 9px; } </style><section><div>Page <span class='pageNumber'></span> of <span class='totalPages'></span></div></section>",
+        "displayHeaderFooter": true
+    }
+}
