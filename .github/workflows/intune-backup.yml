@@ -1,4 +1,4 @@
-name: Backup Intune
+name: Backup Intune config
 
 # Controls when the action will run. 
 on:
@@ -30,7 +30,7 @@ jobs:
           ref: main
           token: ${{ secrets.PAT }}
 
-      - name: Remove prod-backup directory
+      - name: Remove existing prod-backup directory
         shell: bash
         run: |
           rm -f -r -v "$GITHUB_WORKSPACE/prod-backup"
@@ -56,31 +56,12 @@ jobs:
               #--localauth=./auth.json
               #--exclude=assignments
 
-      # Create markdown documentation
-      - name: Generate markdown document
-        shell: bash
-        run: |
-          INTRO="Intune backup and documentation generated at $GITHUB_REPOSITORY <img align=\"right\" width=\"96\" height=\"96\" src=\"./logo.png\">"
-          IntuneCD-startdocumentation \
-              --path="$GITHUB_WORKSPACE/prod-backup" \
-              --outpath="$GITHUB_WORKSPACE/prod-as-built.md" \
-              --tenantname=$TENANT_NAME \
-              --intro=$INTRO \
-              #--split=Y
-
       - name: Get date
         shell: bash
         id: get-date
         run: |
           DATEF=`date +%Y.%m.%d`
           echo "::set-output name=date::$DATEF"
-
-      - name: Configure git CRLF
-        shell: bash
-        id: autocrlf
-        run: |
-          git config --global core.autocrlf true
-          git config --global core.safecrlf false
 
       # Import GPG key so that we can sign the commit
       - name: Import GPG key
@@ -97,28 +78,47 @@ jobs:
           git_committer_name: ${{ secrets.COMMIT_NAME }}
           git_committer_email: ${{ secrets.COMMIT_EMAIL }}
 
-      - name: Commit changes
+      - name: Commit config updates
         id: commit
         uses: stefanzweifel/git-auto-commit-action@v4
         continue-on-error: true
         with:
-          commit_message: "Intune backup ${{steps.get-date.outputs.date}}"
+          commit_message: "Intune config backup ${{steps.get-date.outputs.date}}"
           commit_user_name: ${{ secrets.COMMIT_NAME }}
           commit_user_email: ${{ secrets.COMMIT_EMAIL }}
 
-      - name: "Run if changes have been detected"
+      - name: "No config changes detected"
+        if: steps.commit.outputs.changes_detected == 'false'
+        run: echo "No config changes detected."
+
+      # Create markdown documentation
+      - name: Generate markdown document
         if: steps.commit.outputs.changes_detected == 'true'
-        run: echo "Changes committed."
+        id: create-doc
+        shell: bash
+        run: |
+          INTRO="Endpoint Manager backup and documentation generated at $GITHUB_REPOSITORY <img align=\"right\" width=\"96\" height=\"96\" src=\"./logo.png\">"
+          IntuneCD-startdocumentation \
+              --path="$GITHUB_WORKSPACE/prod-backup" \
+              --outpath="$GITHUB_WORKSPACE/prod-as-built.md" \
+              --tenantname=$TENANT_NAME \
+              --intro="$INTRO" \
+              #--split=Y
+
+      - name: Commit as-built markdown document
+        id: commit-doc
+        uses: stefanzweifel/git-auto-commit-action@v4
+        continue-on-error: true
+        with:
+          commit_message: "MEM config as-built ${{steps.get-date.outputs.date}}"
+          commit_user_name: ${{ secrets.COMMIT_NAME }}
+          commit_user_email: ${{ secrets.COMMIT_EMAIL }}
 
       # Push tag
       - name: Push tag
-        if: steps.commit.outputs.changes_detected == 'true'
+        if: steps.commit-doc.outputs.changes_detected == 'true'
         shell: bash
         run: |
           DATEF=`date +%Y.%m.%d`
-          git tag -a "v$DATEF" -m "Intune documentation $DATEF"
+          git tag -a "v$DATEF" -m "Microsoft Endpoint Manager configuration snapshot $DATEF"
           git push origin "v$DATEF"
-
-      - name: "Run if no changes have been detected"
-        if: steps.commit.outputs.changes_detected == 'false'
-        run: echo "No changes detected."

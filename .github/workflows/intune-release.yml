@@ -1,4 +1,4 @@
-name: Release documentation
+name: Create documentation release
 
 on:
   push:
@@ -10,6 +10,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       # Install md-to-pdf
       # https://github.com/simonhaenisch/md-to-pdf

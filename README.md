@@ -4,4 +4,4 @@ A template repository that you can clone to enable a Microsoft Intune tenant bac
 
 To learn how to use this repository, see this article: [Automate Microsoft Intune As-Built Documentation on GitHub](https://stealthpuppy.com/automate-intune-documentation-github/).
 
-After cloning the repository, you'll need to enable the Actions to run, via the repository settings, and adds the secrets required by the workflows.
+After cloning the repository, you'll need to enable the Actions to run via the repository settings, and add the secrets required by the workflows.
