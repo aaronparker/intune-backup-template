@@ -8,4 +8,4 @@ After cloning the repository, you'll need to enable the Actions to run via the r
 
 The generated as-built documentation will look something like:
 
-![As-built documentation screenshot](https://github.com/asbuilt-sample.png)
+![As-built documentation screenshot](asbuilt-sample.png)
