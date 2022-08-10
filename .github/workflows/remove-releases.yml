@@ -1,0 +1,23 @@
+name: Remove old releases
+
+# Controls when the action will run. 
+on:
+  workflow_dispatch:
+  schedule:
+    # Run the action every day at 2am
+    - cron:  '0 2 * * *'
+
+jobs:
+  remove-releases:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: dev-drprasad/delete-older-releases@v0.2.0
+      with:
+        repo: aaronparker/intune-backup
+         # keep the latest 60 releases - a release is created any time a backup includes changes, so this might be more than the last 60 days
+        keep_latest: 60
+        delete_tags: false
+        delete_tag_pattern: "" #beta # defaults to ""
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
