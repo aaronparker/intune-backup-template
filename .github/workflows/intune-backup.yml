@@ -33,7 +33,7 @@ jobs:
       - name: Remove existing prod-backup directory
         shell: bash
         run: |
-          rm -f -r -v "$GITHUB_WORKSPACE/prod-backup"
+          rm -rfv "$GITHUB_WORKSPACE/prod-backup"
 
       # Install IntuneCD
       # https://github.com/almenscorner/IntuneCD
@@ -52,9 +52,9 @@ jobs:
           IntuneCD-startbackup \
               --mode=1 \
               --output=json \
-              --path="$GITHUB_WORKSPACE/prod-backup"
+              --path="$GITHUB_WORKSPACE/prod-backup" \
+              #--exclude=ConditionalAccess
               #--localauth=./auth.json
-              #--exclude=assignments
 
       - name: Get date
         shell: bash
@@ -97,7 +97,7 @@ jobs:
         id: create-doc
         shell: bash
         run: |
-          INTRO="Endpoint Manager backup and documentation generated at $GITHUB_REPOSITORY <img align=\"right\" width=\"96\" height=\"96\" src=\"./logo.png\">"
+          INTRO="Microsoft Intune backup and documentation generated at $GITHUB_REPOSITORY <img align=\"right\" width=\"96\" height=\"96\" src=\"./logo.png\">"
           IntuneCD-startdocumentation \
               --path="$GITHUB_WORKSPACE/prod-backup" \
               --outpath="$GITHUB_WORKSPACE/prod-as-built.md" \
@@ -110,7 +110,7 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v4
         continue-on-error: true
         with:
-          commit_message: "MEM config as-built ${{steps.get-date.outputs.date}}"
+          commit_message: "Microsoft Intune config as-built ${{steps.get-date.outputs.date}}"
           commit_user_name: ${{ secrets.COMMIT_NAME }}
           commit_user_email: ${{ secrets.COMMIT_EMAIL }}
 
@@ -120,5 +120,5 @@ jobs:
         shell: bash
         run: |
           DATEF=`date +%Y.%m.%d`
-          git tag -a "v$DATEF" -m "Microsoft Endpoint Manager configuration snapshot $DATEF"
+          git tag -a "v$DATEF" -m "Microsoft Intune configuration snapshot $DATEF"
           git push origin "v$DATEF"
