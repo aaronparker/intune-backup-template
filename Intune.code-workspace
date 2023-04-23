@@ -1,0 +1,25 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"cSpell.words": [
+			"DATEF",
+			"htmlconfig",
+			"localauth",
+			"mkdir",
+			"outpath",
+			"pdfconfig",
+			"startbackup",
+			"startdocumentation",
+			"tenantname"
+		]
+	},
+	"extensions": {
+		"recommendations": [
+			"ms-azure-devops.azure-pipelines"
+		]
+	}
+}
