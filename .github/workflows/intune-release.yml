@@ -18,37 +18,34 @@ jobs:
       # https://github.com/simonhaenisch/md-to-pdf
       - name: Install md-to-pdf
         shell: bash
+        working-directory: "${{ github.workspace }}"
         run: |
           npm i -g md-to-pdf
 
       # Convert markdown document to PDF
       - name: Convert markdown to PDF
         shell: bash
+        working-directory: "${{ github.workspace }}"
         run: |
           md-to-pdf "$GITHUB_WORKSPACE/prod-as-built.md" \
+            --md-file-encoding utf-8 \
             --config-file ./md2pdf/pdfconfig.json
 
       # Convert markdown document to PDF
       - name: Convert markdown to HTML
         shell: bash
+        working-directory: "${{ github.workspace }}"
         run: |
           md-to-pdf "$GITHUB_WORKSPACE/prod-as-built.md" \
+            --md-file-encoding utf-8 \
             --config-file ./md2pdf/htmlconfig.json --as-html
 
-      # Import GPG key so that we can sign the commit
-      - name: Import GPG key
-        id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@v5
-        with:
-          gpg_private_key: ${{ secrets.GPGKEY }}
-          passphrase: ${{ secrets.GPGPASSPHRASE }}
-          git_user_signingkey: true
-          git_commit_gpgsign: true
-          git_config_global: true
-          git_tag_gpgsign: true
-          git_push_gpgsign: false
-          git_committer_name: ${{ secrets.COMMIT_NAME }}
-          git_committer_email: ${{ secrets.COMMIT_EMAIL }}
+      # Zip the pdf and html documents
+      - name: Zip documents
+        shell: bash
+        working-directory: "${{ github.workspace }}"
+        run : |
+          zip -q -9 prod-as-built.zip prod-as-built.*
 
       # Upload release
       - name: Upload release
@@ -57,5 +54,4 @@ jobs:
         with:
           prerelease: false
           files: |
-            prod-as-built.pdf
-            prod-as-built.html
+            ${{ github.workspace }}/prod-as-built.zip

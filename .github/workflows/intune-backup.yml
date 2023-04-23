@@ -32,6 +32,7 @@ jobs:
 
       - name: Remove existing prod-backup directory
         shell: bash
+        working-directory: "${{ github.workspace }}"
         run: |
           rm -rfv "$GITHUB_WORKSPACE/prod-backup"
 
@@ -40,6 +41,7 @@ jobs:
       - name: Install IntuneCD
         id: install
         shell: bash
+        working-directory: "${{ github.workspace }}"
         run: |
           pip3 install IntuneCD
 
@@ -47,21 +49,24 @@ jobs:
       - name: Backup Intune configuration
         id: backup
         shell: bash
+        working-directory: "${{ github.workspace }}"
         run: |
           mkdir -p "$GITHUB_WORKSPACE/prod-backup"
           IntuneCD-startbackup \
               --mode=1 \
               --output=json \
               --path="$GITHUB_WORKSPACE/prod-backup" \
+              --autopilot TRUE
               #--exclude=ConditionalAccess
               #--localauth=./auth.json
 
-      - name: Get date
+      - name: Get tag
+        id: get-tag
         shell: bash
-        id: get-date
+        working-directory: "${{ github.workspace }}"
         run: |
           DATEF=`date +%Y.%m.%d`
-          echo "::set-output name=date::$DATEF"
+          echo "tag=$DATEF.${{ github.run_number }}" >> $GITHUB_OUTPUT
 
       # Import GPG key so that we can sign the commit
       - name: Import GPG key
@@ -83,7 +88,7 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v4
         continue-on-error: true
         with:
-          commit_message: "Intune config backup ${{steps.get-date.outputs.date}}"
+          commit_message: "Intune config backup ${{steps.get-tag.outputs.tag}}"
           commit_user_name: ${{ secrets.COMMIT_NAME }}
           commit_user_email: ${{ secrets.COMMIT_EMAIL }}
 
@@ -96,29 +101,30 @@ jobs:
         if: steps.commit.outputs.changes_detected == 'true'
         id: create-doc
         shell: bash
+        working-directory: "${{ github.workspace }}"
         run: |
           INTRO="Microsoft Intune backup and documentation generated at $GITHUB_REPOSITORY <img align=\"right\" width=\"96\" height=\"96\" src=\"./logo.png\">"
           IntuneCD-startdocumentation \
               --path="$GITHUB_WORKSPACE/prod-backup" \
               --outpath="$GITHUB_WORKSPACE/prod-as-built.md" \
               --tenantname=$TENANT_NAME \
-              --intro="$INTRO" \
-              #--split=Y
+              --intro="$INTRO"
 
       - name: Commit as-built markdown document
         id: commit-doc
         uses: stefanzweifel/git-auto-commit-action@v4
         continue-on-error: true
         with:
-          commit_message: "Microsoft Intune config as-built ${{steps.get-date.outputs.date}}"
+          commit_message: "Microsoft Intune config as-built ${{steps.get-tag.outputs.tag}}"
           commit_user_name: ${{ secrets.COMMIT_NAME }}
           commit_user_email: ${{ secrets.COMMIT_EMAIL }}
 
       # Push tag
       - name: Push tag
+        id: push-tag
         if: steps.commit-doc.outputs.changes_detected == 'true'
         shell: bash
+        working-directory: "${{ github.workspace }}"
         run: |
-          DATEF=`date +%Y.%m.%d`
-          git tag -a "v$DATEF" -m "Microsoft Intune configuration snapshot $DATEF"
-          git push origin "v$DATEF"
+          git tag -a "${{steps.get-tag.outputs.tag}}" -m "Microsoft Intune configuration snapshot report ${{steps.get-tag.outputs.tag}}"
+          git push origin "v${{steps.get-tag.outputs.tag}}"
