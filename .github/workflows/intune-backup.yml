@@ -60,14 +60,6 @@ jobs:
               #--exclude=ConditionalAccess
               #--localauth=./auth.json
 
-      - name: Get tag
-        id: get-tag
-        shell: bash
-        working-directory: "${{ github.workspace }}"
-        run: |
-          DATEF=`date +%Y.%m.%d`
-          echo "tag=$DATEF.${{ github.run_number }}" >> $GITHUB_OUTPUT
-
       # Import GPG key so that we can sign the commit
       - name: Import GPG key
         id: import_gpg
@@ -110,6 +102,14 @@ jobs:
               --tenantname=$TENANT_NAME \
               --intro="$INTRO"
 
+      - name: Get tag
+        id: get-tag
+        shell: bash
+        working-directory: "${{ github.workspace }}"
+        run: |
+          DATEF=`date +%Y.%m.%d`
+          echo "tag=$DATEF.${{ github.run_number }}" >> $GITHUB_OUTPUT
+
       - name: Commit as-built markdown document
         id: commit-doc
         uses: stefanzweifel/git-auto-commit-action@v4
@@ -126,5 +126,5 @@ jobs:
         shell: bash
         working-directory: "${{ github.workspace }}"
         run: |
-          git tag -a "${{steps.get-tag.outputs.tag}}" -m "Microsoft Intune configuration snapshot report ${{steps.get-tag.outputs.tag}}"
+          git tag -a "v${{steps.get-tag.outputs.tag}}" -m "Microsoft Intune configuration snapshot report ${{steps.get-tag.outputs.tag}}"
           git push origin "v${{steps.get-tag.outputs.tag}}"
