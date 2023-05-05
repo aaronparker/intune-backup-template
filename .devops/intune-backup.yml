@@ -192,7 +192,7 @@ jobs:
         script: |
           cat "$(Build.SourcesDirectory)/prod-as-built.md" | md-to-pdf --config-file "$(Build.SourcesDirectory)/md2pdf/htmlconfig.json" --as-html > "$(Build.SourcesDirectory)/prod-as-built.html"
         workingDirectory: '$(Build.SourcesDirectory)'
-        failOnStderr: true
+        failOnStderr: false
 
     - task: PublishBuildArtifacts@1
       inputs:
@@ -207,7 +207,7 @@ jobs:
         script: |
           cat "$(Build.SourcesDirectory)/prod-as-built.md" | md-to-pdf --config-file "$(Build.SourcesDirectory)/md2pdf/pdfconfig.json" > "$(Build.SourcesDirectory)/prod-as-built.pdf"
         workingDirectory: '$(Build.SourcesDirectory)'
-        failOnStderr: true
+        failOnStderr: false
 
     - task: PublishBuildArtifacts@1
       inputs:
