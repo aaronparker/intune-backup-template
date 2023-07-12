@@ -4,7 +4,7 @@ IntuneCD-startbackup --mode=1 --output=json --path="$PWD/prod-backup" --localaut
 
 # Generate the as-built document in markdown
 $Auth = Get-Content -Path "$PWD/auth.json" | ConvertFrom-Json
-$INTRO="Endpoint Manager backup and documentation generated locally. <img align=`"right`" width=`"96`" height=`"96`" src=`"./logo.png`">"
+$INTRO="Intune backup and documentation generated locally. <img align=`"right`" width=`"96`" height=`"96`" src=`"./logo.png`">"
 IntuneCD-startdocumentation --path="$PWD/prod-backup" --outpath="$PWD/prod-as-built.md" --tenantname="$($Auth.TENANT_NAME)" --intro="$INTRO"
 
 # Generate a PDF document from the as-built markdown
