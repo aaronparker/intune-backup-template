@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: dev-drprasad/delete-older-releases@v0.2.1
+    - uses: dev-drprasad/delete-older-releases@v0.3.0
       with:
         repo: aaronparker/intune-backup
          # keep the latest 60 releases - a release is created any time a backup includes changes, so this might be more than the last 60 days
