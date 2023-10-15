@@ -85,7 +85,7 @@ jobs:
 
       - name: Commit config updates
         id: commit
-        uses: stefanzweifel/git-auto-commit-action@v4
+        uses: stefanzweifel/git-auto-commit-action@v5
         continue-on-error: true
         with:
           commit_message: "Intune config backup ${{steps.get-tag.outputs.tag}}"
@@ -112,7 +112,7 @@ jobs:
 
       - name: Commit as-built markdown document
         id: commit-doc
-        uses: stefanzweifel/git-auto-commit-action@v4
+        uses: stefanzweifel/git-auto-commit-action@v5
         continue-on-error: true
         with:
           commit_message: "Microsoft Intune config as-built ${{steps.get-tag.outputs.tag}}"
