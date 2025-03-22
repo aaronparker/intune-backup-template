@@ -29,7 +29,8 @@ jobs:
         run: |
           md-to-pdf "$GITHUB_WORKSPACE/prod-as-built.md" \
             --md-file-encoding utf-8 \
-            --config-file ./md2pdf/pdfconfig.json
+            --config-file ./md2pdf/pdfconfig.json \
+            --launch-options '{ "args": ["--no-sandbox", "--disable-setuid-sandbox"] }'
 
       # Convert markdown document to PDF
       - name: Convert markdown to HTML
@@ -38,7 +39,8 @@ jobs:
         run: |
           md-to-pdf "$GITHUB_WORKSPACE/prod-as-built.md" \
             --md-file-encoding utf-8 \
-            --config-file ./md2pdf/htmlconfig.json --as-html
+            --config-file ./md2pdf/htmlconfig.json --as-html \
+            --launch-options '{ "args": ["--no-sandbox", "--disable-setuid-sandbox"] }'
 
       # Zip the pdf and html documents
       - name: Zip documents
